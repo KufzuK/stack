@@ -62,9 +62,9 @@ void stack_pop(Stack *stack)
 	if (stack == NULL)
 	   	return;	
 
-	if (stack->size < 1/4 * stack->capacity)
+	if (stack->size < stack->capacity / 4)
 	{
-		realloc(stack, 1/2 * stack->capacity * sizeof(elem_t));		
+		realloc(stack, stack->capacity / 4 * sizeof(elem_t));		
 	}
 
 	stack->data[stack->size--];

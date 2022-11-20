@@ -48,10 +48,11 @@ void stack_push(Stack *stack, const elem_t value)
 	if (stack->data == NULL)
 		return;
 
+	change_size(stack);
+
 	if (stack->size == stack->capacity)
 	{
-		realloc(stack, 2 * stack->capacity * sizeof(elem_t));
-		stack->capacity *= 2;
+		double_capacity(stack);
 	}
 
 	stack->data[stack->size++] = value;
@@ -64,7 +65,7 @@ void stack_pop(Stack *stack)
 
 	if (stack->size < stack->capacity / 4)
 	{
-		realloc(stack, stack->capacity / 4 * sizeof(elem_t));		
+		reduce_capacity(stack);
 	}
 
 	stack->data[stack->size--];
@@ -80,3 +81,14 @@ elem_t stack_top(Stack *stack)
 	return stack->data[stack->size];
 }
 
+void double_capacity(Stack *stack)
+{
+	realloc(stack, 2 * stack->capacity * sizeof(elem_t));
+	stack->capacity *= 2;
+}
+
+void reduce_capacity(Stack *stack)
+{
+	realloc(stack, stack->capacity / 2 * sizeof(elem_t));
+	stack->capacity /= 2;
+}

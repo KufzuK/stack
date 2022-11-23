@@ -3,6 +3,10 @@
 #include "stack.h"
 
 const int init_capacity = 10;
+const int capacity_change_coef = 2;
+const int capacity_condition_for_realloc = 4;
+
+//stactic functions
 
 struct Stack
 {
@@ -40,13 +44,15 @@ void stack_dtor (Stack *stack)
 {
 	if (stack == NULL)
 		return;
+
 	free (stack->data);
 	free (stack);
 }
 
+static void increase_capacity(Stack* stack);
+static void   reduce_capacity(Stack* stack);
 
 void stack_push(Stack *stack, const elem_t value)
-
 {	
 	if (stack == NULL)
 		return;
@@ -56,7 +62,11 @@ void stack_push(Stack *stack, const elem_t value)
 
 	if (stack->size == stack->capacity)
 	{
-		double_capacity(stack); // too big capacity
+		int old_capacity = stack->capacity;
+		increase_capacity(stack);		
+
+		if (old_capacity == stack->capacity)
+			return;
 	}
 
 	stack->data[stack->size++] = value;
@@ -64,17 +74,19 @@ void stack_push(Stack *stack, const elem_t value)
 
 void stack_pop(Stack *stack)
 {
-	if (stack == NULL)
-	   	return;	
-	if (stack->data == NULL)
-		return;
+	if (stack == NULL || stack->data == NULL)
+	   	return;
 
-	if (stack->size < stack->capacity / 4)
+	if (stack->size < stack->capacity / capacity_condition_for_realloc) //coef
 	{
-		reduce_capacity(stack); // zero capacity
+		int old_capacity = stack->capacity;
+		reduce_capacity(stack); // zero capacity until init capacity
+		
+		if (old_capacity == stack->capacity)
+			return;
 	}
-
-	stack->data[stack->size--];
+	
+	stack->data[--stack->size] = 0;
 
 	return;
 }
@@ -82,41 +94,43 @@ void stack_pop(Stack *stack)
 elem_t stack_top(Stack *stack)
 {
 	if (stack == NULL)
-		return 1; 
+		return 0; 
 
 	if (stack->data == NULL)
-		return 2;
+		return 0;
 
-	return stack->data[stack->size];
+	return stack->data[stack->size - 1];
 }
 
-void double_capacity(Stack *stack)
-{
-	if (stack == NULL)
-		return;
-
-	/*if (stack->capacity >= MAX_MEMORY_ALLOWED / 2)
-		return;*/
-	
-	realloc(stack, 2 * stack->capacity * sizeof(elem_t));
-	stack->capacity *= 2;
-
-	if (stack == NULL)
-		return;
-}
-
-void reduce_capacity(Stack *stack)
+static void increase_capacity(Stack *stack)
 {
 	if (stack == NULL)
 		return;
 	
-	realloc(stack, stack->capacity / 2 * sizeof(elem_t));
-	stack->capacity /= 2;
+	stack->capacity *= capacity_change_coef;
+	elem_t* new_data_ptr = (elem_t*) realloc(stack->data, stack->capacity * sizeof(elem_t));
+	
+	if (new_data_ptr == NULL)
+	{
+		stack->capacity /= capacity_change_coef;
+		return;
+	}
 
+	stack->data = new_data_ptr;		
+}
+
+static void reduce_capacity(Stack *stack)
+{
 	if (stack == NULL)
 		return;
-
-	if (stack->capacity <= 0)
-		return;
 	
+	stack->capacity /= capacity_change_coef; 
+	elem_t* new_data_ptr = (elem_t*) realloc(stack->data, stack->capacity * sizeof(elem_t));
+	
+	if (new_data_ptr == NULL)
+	{
+		stack->capacity *= capacity_change_coef; 
+		return;
+	}
 }
+

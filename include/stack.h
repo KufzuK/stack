@@ -9,6 +9,11 @@ typedef struct Stack Stack;
 
 typedef int elem_t;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef void (*print_elem) (FILE*, const elem_t);
 
 Stack *stack_ctor (print_elem print);
@@ -23,9 +28,15 @@ elem_t stack_top(const Stack* stack);
 
 void stack_dump(FILE* stream, const Stack* stack);
 
+void example_of_dump_function(FILE* stream, const elem_t any_value);
 
+int stack_capacity(const Stack* stack);
 
-/*int MAX_MEMORY_ALLOWED = 10000;*/
+int stack_size(const Stack* stack);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // STACK_H
 
